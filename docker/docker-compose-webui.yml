@@ -1,0 +1,22 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:ollama
+    container_name: open-webui
+    environment:
+      # Connect to host machine's native Ollama instance on macOS
+      - OLLAMA_API_BASE_URL=http://host.docker.internal:11434/api
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      # WebUI settings
+      - WEBUI_AUTH=false
+      - ENABLE_SIGNUP=false
+      - DEFAULT_USER_ROLE=admin
+    ports:
+      - "3000:8080"
+    restart: always
+    volumes:
+      - open-webui-data:/app/backend/data
+      - ollama-data:/root/.ollama
+
+volumes:
+  open-webui-data:
+  ollama-data:
