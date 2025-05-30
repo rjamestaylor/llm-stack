@@ -1,12 +1,49 @@
 services:
+  # Auto-import tools on startup
+  tool-importer:
+    image: python:3.11-slim
+    container_name: tool-importer
+    volumes:
+      - open-webui-data:/app/backend/data
+      - ./exported_tools:/tmp/tools:ro
+      - ./import-tools-to-db.py:/tmp/import-tools-to-db.py:ro
+    command: >
+      bash -c "
+      echo '🔄 Tool auto-importer starting...' &&
+      DB_PATH='/app/backend/data/webui.db' &&
+      max_attempts=120 &&
+      attempt=1 &&
+      echo '⏳ Waiting for Open WebUI database...' &&
+      while [ $$attempt -le $$max_attempts ]; do
+        if [ -f \"$$DB_PATH\" ]; then
+          echo '📁 Database found!' &&
+          break
+        fi &&
+        echo \"⏳ Waiting... ($$attempt/$$max_attempts)\" &&
+        sleep 2 &&
+        attempt=$$((attempt + 1))
+      done &&
+      if [ $$attempt -gt $$max_attempts ]; then
+        echo '❌ Database timeout' &&
+        exit 1
+      fi &&
+      echo '😴 Waiting 15 seconds for database stability...' &&
+      sleep 15 &&
+      echo '📥 Auto-importing tools...' &&
+      python3 /tmp/import-tools-to-db.py /tmp/tools \"$$DB_PATH\" &&
+      echo '🎉 Auto-import completed successfully!'
+      "
+    depends_on:
+      open-webui:
+        condition: service_healthy
+    restart: "no"
+
   open-webui:
     image: ghcr.io/open-webui/open-webui:ollama
     container_name: open-webui
     environment:
-      # Connect to host machine's native Ollama instance on macOS
       - OLLAMA_API_BASE_URL=http://host.docker.internal:11434/api
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
-      # WebUI settings
       - WEBUI_AUTH=false
       - ENABLE_SIGNUP=false
       - DEFAULT_USER_ROLE=admin
@@ -16,6 +53,12 @@ services:
     volumes:
       - open-webui-data:/app/backend/data
       - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
 
 volumes:
   open-webui-data:
