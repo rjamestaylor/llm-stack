@@ -21,18 +21,14 @@ cat "$BENCHMARK_SCRIPT" | sed 's/DEBUG=false/DEBUG=true/' > "$TMP_SCRIPT"
 chmod +x "$TMP_SCRIPT"
 
 echo -e "${GREEN}Starting benchmark with debugging enabled...${NC}"
-# Ensure benchmark-reports directory exists
+echo "The benchmark script will create a timestamped session directory for all output"
 
-# Reports directory
-REPORTS_DIR="$BENCHMARK_DIR/benchmark-reports"
-mkdir -p "$REPORTS_DIR"
-echo "Output will be logged to $REPORTS_DIR/benchmark-debug.log"
-
-# Run the modified script and capture output
-"$TMP_SCRIPT" | tee "$REPORTS_DIR/benchmark-debug.log"
+# Run the modified script 
+"$TMP_SCRIPT"
 
 # Clean up
 rm "$TMP_SCRIPT"
 
 echo -e "${GREEN}Debug run complete!${NC}"
-echo "Check $REPORTS_DIR/benchmark-debug.log for the full output including API responses"
+echo "Check the timestamped session directory in benchmark-reports/ for the full output"
+echo "To see available sessions, run: python visualize_benchmarks.py --list-sessions"
