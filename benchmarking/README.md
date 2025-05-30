@@ -2,86 +2,138 @@
 
 This directory contains scripts for benchmarking the performance of Large Language Models (LLMs) using native Ollama with Metal acceleration on Apple Silicon.
 
-## Benchmarking with Metal Acceleration
+## Overview
 
-All benchmarking scripts now use native Ollama (not Docker-based) to leverage the full capabilities of Apple Silicon:
+The benchmarking system provides comprehensive tools to:
+- Measure LLM performance across multiple models
+- Analyze memory usage and efficiency
+- Track CPU utilization and throughput
+- Visualize results with customizable charts
+- Optimize models for specific hardware configurations
 
-- Metal GPU acceleration for significantly faster inference
-- Optimized memory usage for Apple hardware
-- Direct access to Apple Silicon's Neural Engine
-- Enhanced performance metrics specific to Metal acceleration
+## Running Simple Benchmarks
 
-## Available Benchmarking Scripts
+To run a basic benchmark with all available models:
 
-### 1. `benchmark-models.sh`
-
-The main benchmarking script that tests all available models with Metal acceleration. This script:
-- Fetches all available models from the native Ollama API
-- Runs performance tests on each model using standardized prompts
-- Measures memory usage, inference speed, and token generation metrics
-- Provides Metal-specific acceleration metrics
-
-### 2. `benchmark-models-sequential.sh`
-
-A resource-optimized benchmarking script that tests one model at a time with enhanced hardware metrics. This script:
-- Identifies all available models from the Ollama API
-- Loads only one model at a time, preserving system resources
-- Collects detailed hardware utilization metrics (CPU, memory, GPU)
-- Measures efficiency scores relating performance to resource usage
-- Analyzes Metal acceleration benefits per model
-
-### Analysis Scripts
-
-#### 3. `model-performance-report.sh`
-
-A specialized script focused on performance analysis that:
-- Analyzes benchmark results to rank models by processing speed
-- Calculates throughput scores and efficiency metrics
-- Provides detailed performance optimization recommendations
-- Identifies which models benefit most from Metal acceleration
-
-#### 4. `model-memory-report.sh`
-
-A specialized script focused on memory utilization analysis that:
-- Analyzes benchmark results to rank models by memory efficiency
-- Calculates memory utilization as percentage of system resources
-- Provides memory optimization recommendations
-- Identifies optimal memory/performance trade-offs for Metal acceleration
-
-## Running Benchmarks
-
-To run benchmarks with native Ollama and Metal acceleration:
-
-1. **Install Ollama natively:**
-   ```bash
-   brew install ollama
-   ```
-
-2. **Start the stack:**
+1. **Ensure Ollama is running:**
    ```bash
    ./scripts/start-stack.sh
    ```
-   This starts native Ollama with Metal acceleration and Docker-based Open WebUI.
 
-3. **Pull models for native Ollama:**
-   ```bash
-   ./scripts/pull-models.sh
-   ```
-
-4. **Run benchmarks with Metal acceleration:**
+2. **Run the benchmark script:**
    ```bash
    ./benchmarking/benchmark-models.sh
    ```
 
-5. **For sequential testing of models:**
+3. **For more efficient sequential testing:**
    ```bash
-   ./benchmarking/benchmark-models-sequential.sh
+   ./benchmarking/benchmark-models.sh --sequential
    ```
 
-6. **Stop the stack when finished:**
+4. **To include GPU metrics (requires sudo):**
    ```bash
-   ./scripts/stop-stack.sh
+   ./benchmarking/benchmark-models.sh --gpu-metrics
    ```
+
+The benchmark will:
+- Test each available model with multiple prompt types
+- Collect metrics on speed, memory usage, and CPU utilization
+- Generate detailed reports in a timestamped session directory
+
+## Visualizing Benchmark Results
+
+After running benchmarks, you can visualize the results:
+
+1. **Basic visualization with default options:**
+   ```bash
+   python benchmarking/visualize_benchmarks.py --latest
+   ```
+
+2. **Using the interactive example script:**
+   ```bash
+   ./benchmarking/example_run.sh
+   ```
+
+3. **Creating specific visualizations:**
+   ```bash
+   python benchmarking/visualize_benchmarks.py --summary-path 'benchmark-reports/SESSION_TIMESTAMP/summary.csv' --overview
+   ```
+
+4. **List available benchmark sessions:**
+   ```bash
+   python benchmarking/visualize_benchmarks.py --list-sessions
+   ```
+
+## Analyzing Benchmark Results
+
+Generate specialized reports from your benchmark data:
+
+1. **Memory utilization analysis:**
+   ```bash
+   ./benchmarking/model-memory-report.sh SESSION_TIMESTAMP
+   ```
+
+2. **Performance metrics analysis:**
+   ```bash
+   ./benchmarking/model-performance-report.sh SESSION_TIMESTAMP
+   ```
+
+These reports provide detailed insights and optimization recommendations based on your benchmark results.
+
+## Advanced Usage
+
+### GPU Acceleration Options
+
+The benchmarking system automatically detects Metal acceleration on Apple Silicon:
+
+- Set `METAL_DEVICE_WRAPPER_ENABLED=1` before starting Ollama for Metal acceleration
+- Use `--gpu-metrics` to collect GPU power usage data (requires sudo)
+- Generate GPU-specific visualizations with `--include-gpu` and `--gpu-chart` options
+
+Example:
+```bash
+# Run benchmark with GPU metrics
+./benchmarking/benchmark-models.sh --gpu-metrics
+
+# Visualize GPU data
+python benchmarking/visualize_benchmarks.py --latest --include-gpu --gpu-chart
+```
+
+### Visualization Options
+
+The visualization tool supports multiple chart types and formats:
+
+```bash
+# Generate all chart types
+python benchmarking/visualize_benchmarks.py --all --summary-path 'benchmark-reports/SESSION_TIMESTAMP/summary.csv'
+
+# Generate specific chart types
+python benchmarking/visualize_benchmarks.py --performance --efficiency --memory
+
+# Change output format
+python benchmarking/visualize_benchmarks.py --overview --format pdf
+```
+
+Available chart types:
+- `--overview`: Generate a 2x2 overview of key metrics
+- `--performance`: Create performance comparison charts
+- `--efficiency`: Display efficiency score charts
+- `--memory`: Show memory usage with efficiency annotations
+- `--all`: Generate all visualization types
+
+Output formats:
+- PNG (default)
+- PDF
+- SVG
+
+### Debugging Options
+
+For troubleshooting or detailed analysis:
+
+```bash
+# Run benchmarks with detailed API responses
+./benchmarking/run-benchmark-debug.sh
+```
 
 ## Metrics Collected
 
@@ -98,55 +150,37 @@ To run benchmarks with native Ollama and Metal acceleration:
 - CPU usage (baseline, peak, and average)
 - System memory utilization percentage
 - Metal acceleration status and performance
-- Hardware efficiency ratings
+- GPU power usage (when --gpu-metrics is enabled)
 
-### Analysis Reports
-- Performance optimization recommendations
-- Memory efficiency analysis
-- Hardware utilization insights
-- Metal acceleration benefits
-- Deployment recommendations for different environments
+## Example Workflow
 
-## Visualizing Results
-
-After running benchmarks, you can generate visualizations with the provided Python scripts:
+Complete benchmark workflow example:
 
 ```bash
-python -c "
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+# Start Ollama with Metal acceleration
+METAL_DEVICE_WRAPPER_ENABLED=1 ./scripts/start-stack.sh
 
-# Read the data
-data = pd.read_csv('native_summary.csv')
+# Pull models to benchmark
+./scripts/pull-models.sh
 
-# Set up the figure with subplots
-fig, axs = plt.subplots(2, 2, figsize=(15, 10))
+# Run benchmarks with GPU metrics
+./benchmarking/benchmark-models.sh --gpu-metrics
 
-# Plot memory usage
-sns.barplot(x='Model', y='Avg Memory (MB)', data=data, ax=axs[0,0], palette='Blues_d')
-axs[0,0].set_title('Memory Usage by Model (Native with Metal)')
-axs[0,0].set_xticklabels(axs[0,0].get_xticklabels(), rotation=45, ha='right')
+# Generate visualizations
+python benchmarking/visualize_benchmarks.py --latest --all
 
-# Plot tokens per second
-sns.barplot(x='Model', y='Avg Tokens/sec', data=data, ax=axs[0,1], palette='Greens_d')
-axs[0,1].set_title('Token Generation Speed by Model (Native with Metal)')
-axs[0,1].set_xticklabels(axs[0,1].get_xticklabels(), rotation=45, ha='right')
+# Analyze memory efficiency
+./benchmarking/model-memory-report.sh $(python benchmarking/visualize_benchmarks.py --list-sessions | head -2 | tail -1 | awk '{print $2}')
 
-# Plot CPU usage
-sns.barplot(x='Model', y='Avg Peak CPU (%)', data=data, ax=axs[1,0], palette='Reds_d')
-axs[1,0].set_title('Peak CPU Usage by Model (Native with Metal)')
-axs[1,0].set_xticklabels(axs[1,0].get_xticklabels(), rotation=45, ha='right')
-
-# Plot efficiency score
-sns.barplot(x='Model', y='Avg Throughput Score', data=data, ax=axs[1,1], palette='Purples_d')
-axs[1,1].set_title('Efficiency Score by Model (Native with Metal)')
-axs[1,1].set_xticklabels(axs[1,1].get_xticklabels(), rotation=45, ha='right')
-
-plt.tight_layout()
-plt.savefig('native_model_performance_comparison.png')
-plt.close()
-
-print('Visualization saved as native_model_performance_comparison.png')
-"
+# Analyze performance metrics
+./benchmarking/model-performance-report.sh $(python benchmarking/visualize_benchmarks.py --list-sessions | head -2 | tail -1 | awk '{print $2}')
 ```
+
+## Customizing Benchmarks
+
+To modify the benchmark prompts or add new test scenarios, edit the `benchmark-models.sh` script:
+
+- `SHORT_PROMPT`: Simple, quick responses
+- `MEDIUM_PROMPT`: Moderate complexity responses
+- `LONG_PROMPT`: Complex, detailed responses
+- `CODE_PROMPT`: Programming and technical responses
