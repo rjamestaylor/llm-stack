@@ -34,5 +34,9 @@ echo "Models will be stored in: $OLLAMA_DATA_DIR"
 echo "API will be available at: http://localhost:11434"
 echo "Metal acceleration: ENABLED"
 
-# Run ollama serve
-ollama serve
+# Run ollama serve in the background using nohup
+LOG_FILE="$OLLAMA_DATA_DIR/ollama.log"
+echo "Starting Ollama in background mode. Logs will be written to: $LOG_FILE"
+nohup ollama serve > "$LOG_FILE" 2>&1 &
+PID=$!
+echo "Ollama started with PID: $PID"
