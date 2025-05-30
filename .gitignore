@@ -71,7 +71,8 @@ datasets/
 
 # Benchmark specific
 benchmarking/benchmark-reports/*
-!benchmarking/benchmark-reports/sample/
+benchmarking/benchmark-reports/sample/*.png
+!benchmarking/benchmark-reports/sample
 !benchmarking/benchmark-reports/sample/sample_summary.csv
 
 # Logs and temporary files
