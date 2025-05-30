@@ -13,18 +13,41 @@ NC='\033[0m' # No Color
 # Benchmark directory
 BENCHMARK_DIR="$(dirname "$0")"
 
-# Reports directory
-REPORTS_DIR="$BENCHMARK_DIR/benchmark-reports"
+# Reports base directory
+REPORTS_BASE_DIR="$BENCHMARK_DIR/benchmark-reports"
 
-echo -e "${BOLD}${GREEN}LLM Models Performance Analysis${NC}"
+# Parse command line arguments
+SESSION="${1:-sample}"
+
+# Setup the reports directory based on provided session
+if [ "$SESSION" = "sample" ]; then
+    REPORTS_DIR="$REPORTS_BASE_DIR"
+    SUMMARY_FILE="$REPORTS_DIR/sample_summary.csv"
+    echo -e "${BOLD}${GREEN}LLM Models Performance Analysis (Sample Data)${NC}"
+else
+    # Use the provided session timestamp
+    REPORTS_DIR="$REPORTS_BASE_DIR/$SESSION"
+    SUMMARY_FILE="$REPORTS_DIR/summary.csv"
+    echo -e "${BOLD}${GREEN}LLM Models Performance Analysis (Session: $SESSION)${NC}"
+fi
+
 echo "============================================================"
 
 # Ensure reports directory exists
 mkdir -p "$REPORTS_DIR"
 
 # Check if summary.csv exists
-if [ ! -f "${REPORTS_DIR}/summary.csv" ]; then
-    echo -e "${RED}Error: ${REPORTS_DIR}/summary.csv not found. Please run benchmark tests first.${NC}"
+if [ ! -f "$SUMMARY_FILE" ]; then
+    echo -e "${RED}Error: $SUMMARY_FILE not found.${NC}"
+    
+    if [ "$SESSION" = "sample" ]; then
+        echo -e "${YELLOW}Please run benchmark tests first or specify a valid session.${NC}"
+    else
+        echo -e "${YELLOW}Please specify a valid session timestamp.${NC}"
+        echo -e "${YELLOW}Available sessions:${NC}"
+        ls -1 "$REPORTS_BASE_DIR" | grep -E "[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}:[0-9]{2}:[0-9]{2}" || echo "No sessions found"
+    fi
+    
     exit 1
 fi
 
