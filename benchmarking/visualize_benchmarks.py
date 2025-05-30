@@ -87,14 +87,23 @@ os.makedirs(output_dir, exist_ok=True)
 print(f"Using summary file: {summary_path}")
 print(f"Saving charts to: {output_dir}")
 
-df = pd.read_csv(args.summary_path)
+# Read the benchmark data
+try:
+    df = pd.read_csv(summary_path)
+except FileNotFoundError:
+    print(f"Error: Could not find summary file at {summary_path}")
+    exit(1)
+except Exception as e:
+    print(f"Error reading {summary_path}: {str(e)}")
+    exit(1)
 
+# Create charts
 plt.figure()
 df.plot(x='Model', y='Avg Tokens/sec', kind='bar', title='Average Tokens per Second')
 plt.ylabel('Tokens/sec')
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig(f"{args.output_dir}/tokens_per_second.png")
+plt.savefig(f"{output_dir}/tokens_per_second.png")
 
 if args.include_gpu or args.gpu_chart:
     if 'Avg GPU Power (W)' in df.columns:
@@ -110,8 +119,7 @@ if args.include_gpu or args.gpu_chart:
             plt.title('Performance vs. GPU Power')
             plt.xticks(rotation=45)
             plt.tight_layout()
-            plt.savefig(f"{args.output_dir}/performance_vs_gpu_power.png")
-
+            plt.savefig(f"{output_dir}/performance_vs_gpu_power.png")
 
         if args.gpu_chart:
             plt.figure()
@@ -119,6 +127,6 @@ if args.include_gpu or args.gpu_chart:
             plt.ylabel('GPU Power (W)')
             plt.xticks(rotation=45)
             plt.tight_layout()
-            plt.savefig(f"{args.output_dir}/gpu_power_usage.png")
+            plt.savefig(f"{output_dir}/gpu_power_usage.png")
 
 print("Visualization complete! Check the output directory for generated charts.")
