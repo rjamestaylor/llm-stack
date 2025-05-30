@@ -33,6 +33,17 @@ mkdir -p "$REPORTS_DIR"
 
 RESULT_FILE="${REPORTS_DIR}/model_benchmark_results.csv"
 
+# NEW: Check for GPU metrics flag
+enable_gpu_metrics=false
+for arg in "$@"; do
+    case $arg in
+        --gpu-metrics)
+            enable_gpu_metrics=true
+            echo -e "\033[1;34mGPU metrics gathering ENABLED (requires sudo)\033[0m"
+            ;;
+    esac
+done
+
 # Function to safely extract values from JSON with fallback
 safe_jq_extract() {
     local json=$1
@@ -174,6 +185,16 @@ get_cpu_usage() {
     ps -o %cpu= -p $(pgrep -f "ollama serve") | awk '{sum+=$1} END {printf "%.2f", sum}'
 }
 
+# Function to safely gather GPU power (requires sudo)
+get_gpu_power() {
+    if [ "$enable_gpu_metrics" = true ]; then
+        local power=$(sudo powermetrics -n 1 -s gpu_power 2>/dev/null | grep 'GPU Power' | awk '{print $3}')
+        echo "$power"
+    else
+        echo "N/A"
+    fi
+}
+
 # Function to get hardware information with Apple Silicon support
 get_hardware_info() {
     echo "Collecting system hardware information..."
@@ -238,6 +259,10 @@ benchmark_model_prompt() {
     local prompt=$2
     local prompt_name=$3
     local result_file=$4
+
+
+    # Gather GPU power before benchmark (if enabled)
+    local gpu_power_before=$(get_gpu_power)
     
     echo -e "${BLUE}Testing ${BOLD}$model${NC} with ${YELLOW}$prompt_name prompt${NC}..."
     
@@ -409,9 +434,18 @@ benchmark_model_prompt() {
     # Get peak memory during generation
     local peak_memory=$(get_memory_usage)
     local memory_used=$(echo "$peak_memory - $baseline_memory" | bc)
-    
+
+    # Gather GPU power after benchmark (if enabled)
+    local gpu_power_after=$(get_gpu_power)
+
+    # Calculate average GPU power (if numeric)
+    local avg_gpu_power="N/A"
+    if [[ "$gpu_power_before" =~ ^[0-9]+(\.[0-9]+)?$ ]] && [[ "$gpu_power_after" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+        avg_gpu_power=$(echo "scale=2; ($gpu_power_before + $gpu_power_after) / 2" | bc)
+    fi
+
     # Append results to the result file with new metrics
-    echo "$model,$prompt_name,$baseline_memory,$peak_memory,$memory_used,$baseline_cpu,$max_cpu,$avg_cpu,$total_tokens,$generated_tokens,$tokens_per_second,$tokens_per_mb,$throughput_score,$metal_boost,$total_time" >> $result_file
+    echo "$model,$prompt_name,$baseline_memory,$peak_memory,$memory_used,$baseline_cpu,$max_cpu,$avg_cpu,$total_tokens,$generated_tokens,$tokens_per_second,$tokens_per_mb,$throughput_score,$metal_boost,$total_time,$avg_gpu_power" >> $result_file
     
     # Format output
     echo -e "${GREEN}Completed in ${BOLD}$(printf "%.2f" $total_time)s${NC}"
@@ -424,7 +458,12 @@ benchmark_model_prompt() {
     
     echo -e "Memory usage: ${BOLD}$(printf "%.1f" $memory_used)MB${NC} (baseline: ${baseline_memory}MB, peak: ${peak_memory}MB)"
     echo -e "CPU usage: Peak ${BOLD}${max_cpu}%${NC}, Avg ${BOLD}${avg_cpu}%${NC}"
-    
+
+    # Display on console
+    if [ "$enable_gpu_metrics" = true ]; then
+        echo -e "GPU Power (avg): \033[1m${avg_gpu_power} W\033[0m"
+    fi
+
     if [[ "$throughput_score" != "N/A" ]]; then
         echo -e "Efficiency score: ${BOLD}$(printf "%.2f" $throughput_score)${NC} (tokens/sec per CPU%)"
     fi
@@ -473,7 +512,7 @@ benchmark_single_model() {
     
     # Add header to the combined result file if it doesn't exist
     if [ ! -f "$RESULT_FILE" ]; then
-        echo "Model,Prompt,Baseline Memory (MB),Peak Memory (MB),Memory Used (MB),Baseline CPU (%),Peak CPU (%),Avg CPU (%),Total Tokens,Generated Tokens,Tokens per Second,Tokens per MB,Throughput Score,Metal Acceleration,Total Time (s)" > "$RESULT_FILE"
+        echo "Model,Prompt,Baseline Memory (MB),Peak Memory (MB),Memory Used (MB),Baseline CPU (%),Peak CPU (%),Avg CPU (%),Total Tokens,Generated Tokens,Tokens per Second,Tokens per MB,Throughput Score,Metal Acceleration,Total Time (s),Avg GPU Power (W)" > "$RESULT_FILE"
     fi
     
     # Check if temp file exists and has content before appending
@@ -522,7 +561,7 @@ run_benchmarks() {
     echo "------------------------------------------------------------"
     
     # Create/overwrite results file with enhanced header
-    echo "Model,Prompt,Baseline Memory (MB),Peak Memory (MB),Memory Used (MB),Baseline CPU (%),Peak CPU (%),Avg CPU (%),Total Tokens,Generated Tokens,Tokens per Second,Tokens per MB,Throughput Score,Metal Acceleration,Total Time (s)" > "$RESULT_FILE"
+    echo "Model,Prompt,Baseline Memory (MB),Peak Memory (MB),Memory Used (MB),Baseline CPU (%),Peak CPU (%),Avg CPU (%),Total Tokens,Generated Tokens,Tokens per Second,Tokens per MB,Throughput Score,Metal Acceleration,Total Time (s),Avg GPU Power (W)" > "$RESULT_FILE"
     
     # Check if Ollama is running
     if ! curl -s "${OLLAMA_API}/api/tags" > /dev/null; then
@@ -619,13 +658,14 @@ display_results() {
         sum_tokens[$1] += $11; 
         sum_tokens_per_mb[$1] += $12;
         sum_throughput[$1] += $13;
-        sum_time[$1] += $15; 
+        sum_time[$1] += $15;
+        if ($16 ~ /^[0-9.]+$/) sum_gpu_power[$1] += $16;
         count[$1]++
     } 
     END {
-        print "Model,Avg Memory (MB),Avg Peak CPU (%),Avg CPU (%),Avg Tokens/sec,Avg Tokens/MB,Avg Throughput Score,Metal Acceleration,Avg Time (s)";
+        print "Model,Avg Memory (MB),Avg Peak CPU (%),Avg CPU (%),Avg Tokens/sec,Avg Tokens/MB,Avg Throughput Score,Metal Acceleration,Avg Time (s),Avg GPU Power (W)";
         for (model in count) {
-            printf "%s,%.1f,%.2f,%.2f,%.2f,%.2f,%.2f,%s,%.2f\n", 
+            printf "%s,%.1f,%.2f,%.2f,%.2f,%.2f,%.2f,%s,%.2f,%.2f\n", 
                 model, 
                 sum_memory[model]/count[model],
                 sum_peak_cpu[model]/count[model],
@@ -634,7 +674,8 @@ display_results() {
                 sum_tokens_per_mb[model]/count[model],
                 sum_throughput[model]/count[model],
                 "Enabled",
-                sum_time[model]/count[model]
+                sum_time[model]/count[model],
+                (model in sum_gpu_power && count[model] > 0) ? sum_gpu_power[model]/count[model] : 0
         }
     }' "$result_file" > "${reports_dir}/summary.csv"
     
@@ -692,6 +733,14 @@ display_results() {
     echo "  --format {png,pdf,svg}  Output file format (default: png)"
     echo ""
     echo "Example: python ./visualize_benchmarks.py --all"
+    echo ""
+    # NEW: Visualization script call for GPU metrics
+    if [ "$enable_gpu_metrics" = true ]; then
+        echo -e "\n\033[1;33mTo visualize GPU metrics:\033[0m"
+        echo "Run: python ./visualize_benchmarks.py --summary-path '${REPORTS_DIR}/summary.csv' --output-dir '${REPORTS_DIR}' --include-gpu"
+        echo ""
+        echo "You can add '--gpu-chart' to generate GPU power usage charts"
+    fi
 }
 
 # Check for required tools
