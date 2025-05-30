@@ -65,6 +65,8 @@ case "$CHOICE" in
     7)
         OPTS="--include-gpu --gpu-chart"
         echo -e "${GREEN}Generating charts with GPU metrics...${NC}"
+        echo -e "${YELLOW}Note: GPU metrics must be collected during benchmark run${NC}"
+        echo -e "${YELLOW}To collect GPU metrics, run benchmark with: ./benchmark-models.sh --gpu-metrics${NC}"
         ;;
     *)
         OPTS=""
