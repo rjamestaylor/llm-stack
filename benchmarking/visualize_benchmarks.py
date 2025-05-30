@@ -159,13 +159,16 @@ def create_overview_chart(df, output_dir, file_format='png'):
 def create_gpu_charts(df, output_dir, include_gpu=False, gpu_chart=False, file_format='png'):
     """Create GPU-related charts if the data is available."""
     if 'Avg GPU Power (W)' not in df.columns:
-        print("GPU power data not available. Skipping GPU charts.")
+        print("GPU power data column not found in summary file. Skipping GPU charts.")
+        print("Note: To collect GPU metrics, run benchmark with --gpu-metrics flag.")
         return
     
     # Filter out rows with N/A GPU power
     df_gpu = df[df['Avg GPU Power (W)'] != 'N/A'].copy()
     if df_gpu.empty:
-        print("No valid GPU power data found. Skipping GPU charts.")
+        print("No valid GPU power data found in summary file. All values are 'N/A'.")
+        print("Note: To collect GPU metrics, run benchmark with --gpu-metrics flag.")
+        print("Example: ./benchmarking/benchmark-models.sh --gpu-metrics")
         return
     
     # Convert to numeric
