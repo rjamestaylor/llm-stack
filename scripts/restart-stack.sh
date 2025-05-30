@@ -79,21 +79,16 @@ OLLAMA_DATA_DIR="$HOME/ollama-native"
 mkdir -p "$OLLAMA_DATA_DIR"
 echo -e "${BLUE}Ollama data directory: ${OLLAMA_DATA_DIR}${NC}"
 
-# Start native Ollama in the background
-echo -e "${GREEN}Starting native Ollama with Metal acceleration for Apple Silicon...${NC}"
-
-# Set environment variables for Metal support
+# Set environment variables for custom data directory 
 export OLLAMA_HOST=0.0.0.0
 export OLLAMA_MODELS="$OLLAMA_DATA_DIR"
 export METAL_DEVICE_WRAPPER_ENABLED=1
 export METAL_DEBUG_ERROR_MODE=1
+export OLLAMA_DATA_DIR="$OLLAMA_DATA_DIR"  # Export for start-ollama.sh to use
 
-# Start in background, redirect output to log file
-nohup ollama serve > "$OLLAMA_DATA_DIR/ollama.log" 2>&1 &
-OLLAMA_PID=$!
-
-echo -e "${BLUE}Ollama started with PID: $OLLAMA_PID${NC}"
-echo -e "${BLUE}Log file: $OLLAMA_DATA_DIR/ollama.log${NC}"
+# Start native Ollama in the background
+echo -e "${GREEN}Starting native Ollama with Metal acceleration for Apple Silicon...${NC}"
+"$SCRIPT_DIR/start-ollama.sh"
 
 # Wait for Ollama to initialize
 echo "Waiting for Ollama to initialize..."
