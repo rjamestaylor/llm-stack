@@ -71,9 +71,8 @@ datasets/
 
 # Benchmark specific
 benchmarking/benchmark-reports/*
-!benchmarking/benchmark-reports/sample_summary.csv
-!benchmarking/benchmark-reports/hardware_info.txt
-!benchmarking/benchmark-reports/performance_metrics.txt
+!benchmarking/benchmark-reports/sample/
+!benchmarking/benchmark-reports/sample/sample_summary.csv
 
 # Logs and temporary files
 logs/
