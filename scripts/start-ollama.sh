@@ -8,8 +8,13 @@ if ! command -v ollama &> /dev/null; then
     exit 1
 fi
 
-# Use default Ollama models directory
-OLLAMA_DATA_DIR="$HOME/.ollama"
+# Use default Ollama models directory if not already set
+if [ -z "$OLLAMA_DATA_DIR" ]; then
+    OLLAMA_DATA_DIR="$HOME/.ollama"
+fi
+
+# Ensure the directory exists
+mkdir -p "$OLLAMA_DATA_DIR"
 
 # Environment variables for Metal optimization
 export OLLAMA_HOST=0.0.0.0     # Make accessible from Docker
