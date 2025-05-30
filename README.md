@@ -41,49 +41,17 @@ All components can be managed independently:
 - `pull-models-fp16.sh` - Download recommended FP16 models for optimal quality (larger but more accurate)
 - `list-models.sh` - List available models
 
-## Benchmarking Tools
+## Benchmarking with llm-bench
 
-This repository includes comprehensive benchmarking tools to test and compare model performance:
+For model benchmarking, we recommend using the dedicated [llm-bench](https://github.com/llm-bench) repository which has been extracted from this project. 
 
-```bash
-# Standard benchmarking
-./benchmarking/benchmark-models.sh
+### llm-bench Features
+- **Comprehensive Performance Testing**: Measure token generation speed, memory usage, CPU utilization
+- **Model Comparison**: Compare different models on the same hardware
+- **Visualization Tools**: Generate charts and reports for easy analysis
+- **Hardware Optimization**: Identify the best models for your specific system
 
-# Run models sequentially (one at a time)
-./benchmarking/benchmark-models.sh --sequential
-
-# Include GPU metrics (requires sudo)
-./benchmarking/benchmark-models.sh --gpu-metrics
-```
-
-### Benchmarking Features
-- **Performance Metrics**: Token generation speed, memory usage, CPU utilization
-- **Efficiency Analysis**: Throughput scores, tokens per MB, Metal acceleration efficiency
-- **Visualization**: Generate charts and reports for easy comparison
-- **Hardware Optimization**: Identify the best models for your specific hardware
-
-### Visualization Tools
-```bash
-# Generate visualizations from latest benchmark
-python benchmarking/visualize_benchmarks.py --latest
-
-# Run interactive visualization tool
-./benchmarking/example_run.sh
-
-# Generate specific chart types
-python benchmarking/visualize_benchmarks.py --all
-```
-
-### Analysis Reports
-```bash
-# Memory usage analysis
-./benchmarking/model-memory-report.sh SESSION_TIMESTAMP
-
-# Performance metrics analysis
-./benchmarking/model-performance-report.sh SESSION_TIMESTAMP
-```
-
-For more detailed benchmarking information, see [benchmarking/README.md](benchmarking/README.md).
+The llm-bench repository provides a complete set of tools for benchmarking LLM performance with Ollama, including detailed documentation, visualization tools, and analysis capabilities.
 
 ## System Requirements
 
