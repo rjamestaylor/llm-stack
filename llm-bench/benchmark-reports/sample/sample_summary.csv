@@ -1,4 +1,0 @@
-"Model","Avg Memory (MB)","Avg Peak CPU (%)","Avg CPU (%)","Avg Tokens/sec","Avg Tokens/MB","Avg Throughput Score","Metal Acceleration","Avg Time (s)","Avg GPU Power (W)"
-"model-A",1200,75.5,60.2,45.8,0.038,0.76,"Enabled",12.5,18.2
-"model-B",1300,80.1,65.0,50.2,0.041,0.81,"Enabled",11.7,20.5
-"model-C",1100,70.3,55.8,42.6,0.036,0.72,"Enabled",13.1,17.9
