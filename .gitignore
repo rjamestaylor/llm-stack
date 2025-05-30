@@ -37,6 +37,7 @@ htmlcov/
 .hypothesis/
 .venv
 venv/
+path/
 ENV/
 env/
 .python-version
@@ -80,6 +81,7 @@ logs/
 *.tmp
 tmp/
 temp/
+nohup.out
 
 # Environment variables and secrets
 .env

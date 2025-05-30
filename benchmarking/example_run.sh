@@ -14,8 +14,8 @@ SESSION="${1:-sample}"
 
 # Check if the provided session is "sample" or a timestamp
 if [ "$SESSION" = "sample" ]; then
-    SUMMARY_PATH="./benchmark-reports/sample_summary.csv"
-    OUTPUT_DIR="./"
+    SUMMARY_PATH="./benchmark-reports/sample/sample_summary.csv"
+    OUTPUT_DIR="./benchmark-reports/sample"
     echo -e "${YELLOW}Using sample data${NC}"
 else
     # Use the provided session timestamp
