@@ -24,8 +24,12 @@ SCRIPT_DIR="$BENCHMARK_DIR/../scripts"
 # Ollama API endpoint
 OLLAMA_API="http://127.0.0.1:11434"
 
+# Generate timestamp for this benchmark session (YYYY-mm-dd_HH:MM:SS)
+SESSION_TIMESTAMP=$(date +"%Y-%m-%d_%H:%M:%S")
+
 # Reports directory and result file
-REPORTS_DIR="$BENCHMARK_DIR/benchmark-reports"
+REPORTS_DIR="$BENCHMARK_DIR/benchmark-reports/$SESSION_TIMESTAMP"
+mkdir -p "$REPORTS_DIR"
 
 RESULT_FILE="${REPORTS_DIR}/model_benchmark_results.csv"
 
