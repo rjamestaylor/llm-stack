@@ -16,7 +16,7 @@ This repository provides:
 
 1. **Install Ollama**: `brew install ollama` (if not already installed)
 2. **Launch Stack**: `./scripts/start-stack.sh`
-3. **Pull Models**: `./scripts/pull-models.sh`
+3. **Pull Models**: `./scripts/pull-models-fp16.sh`
 4. **Access WebUI**: http://localhost:3000
 
 ## Management Scripts
@@ -43,7 +43,7 @@ All components can be managed independently:
 
 ## Benchmarking with llm-bench
 
-For model benchmarking, we recommend using the dedicated [llm-bench](https://github.com/llm-bench) repository which has been extracted from this project. 
+For model benchmarking, we recommend using the dedicated [llm-bench](https://github.com/rjamestaylor/llm-bench) repository which has been extracted from this project. 
 
 ### llm-bench Features
 - **Comprehensive Performance Testing**: Measure token generation speed, memory usage, CPU utilization

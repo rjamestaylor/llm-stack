@@ -11,7 +11,7 @@ NC='\033[0m' # No Color
 # Get the absolute path to the script directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-MODEL="mistral:7b-instruct"  # Default model
+MODEL="gpt-oss:120b"  # Default model
 
 show_usage() {
   echo "Usage: $0 [OPTIONS] [MODEL]"
@@ -21,7 +21,7 @@ show_usage() {
   echo "  --select-model, -s    Interactively select a model"
   echo "  --help, -h            Show this help message"
   echo ""
-  echo "If MODEL is provided, it will be loaded. Otherwise, mistral:7b-instruct is used."
+  echo "If MODEL is provided, it will be loaded. Otherwise, gpt-oss:120b is used."
   exit 0
 }
 

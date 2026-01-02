@@ -10,6 +10,27 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+# Deprecated: use pull-models-fp16.sh
+echo -e "${YELLOW}Deprecated: use pull-models-fp16.sh${NC}"
+
+read -p "Enter any key to quit or 'proceed' to continue, anyway: " selection
+    
+    # Default quit
+    if [[ -z "$selection" ]]; then
+        selection='quit'
+    fi
+
+case "$selection" in
+    "proceed")
+        echo "...continuing..."
+        ;;
+    *)
+        # If no arguments, just list models
+        exit 0
+        ;;
+esac
+
+echo "===================================================="
 echo -e "${GREEN}Pulling LLM Models with Metal Acceleration${NC}"
 echo -e "${BLUE}Optimized for MacStudio Pro M2 Ultra${NC}"
 echo "===================================================="

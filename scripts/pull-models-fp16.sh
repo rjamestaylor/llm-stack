@@ -30,12 +30,18 @@ fi
 # Define models optimized for Apple Silicon with Metal
 # For best Metal acceleration, prefer fp16 models when available
 models=(
-    "llama3.1:70b-instruct-fp16"    # Full precision works better with Metal
-    "mixtral:8x7b-instruct-v0.1-fp16"
-    "qwen2.5:72b-instruct"
-    "codestral:22b-instruct-v0.1"
-    "llama3.1:8b-instruct"
-    "mistral:7b-instruct"
+    #"llama3.1:70b-instruct-fp16"    # Full precision works better with Metal
+    #"mixtral:8x7b-instruct-v0.1-fp16"
+    #"qwen2.5:72b-instruct"
+    #"codestral:22b-instruct-v0.1"
+    #"llama3.1:8b-instruct"
+    #"mistral:7b-instruct"
+    "gpt-oss:120b"
+    "gpt-oss:20b"
+    "qwen3:8b"
+    "qwen3-coder:30b"
+    "ministral-3:8b"
+    "devstral-2:latest"
 )
 
 # Get list of already pulled models

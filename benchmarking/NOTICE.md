@@ -1,6 +1,6 @@
 # IMPORTANT NOTICE: Benchmarking Moved to llm-bench
 
-The benchmarking functionality previously contained in this directory has been moved to a dedicated repository: [llm-bench](https://github.com/llm-bench).
+The benchmarking functionality previously contained in this directory has been moved to a dedicated repository: [llm-bench](https://github.com/rjamestaylor/llm-bench).
 
 ## What This Means
 

@@ -1,6 +1,6 @@
 # LLM Model Benchmarking - Moved to llm-bench
 
-> **Note:** The benchmarking functionality has been moved to a dedicated repository: [llm-bench](https://github.com/llm-bench)
+> **Note:** The benchmarking functionality has been moved to a dedicated repository: [llm-bench](https://github.com/rjamestaylor/llm-bench)
 
 ## Benchmarking Features Now Available in llm-bench
 
@@ -14,7 +14,7 @@ The llm-bench repository provides comprehensive tools for benchmarking Large Lan
 
 ## Using llm-bench
 
-For all benchmarking needs, please visit the [llm-bench repository](https://github.com/llm-bench), which contains:
+For all benchmarking needs, please visit the [llm-bench repository](https://github.com/rjamestaylor/llm-bench), which contains:
 
 - Detailed documentation on running benchmarks
 - Visualization tools for benchmark results
