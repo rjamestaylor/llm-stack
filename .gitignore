@@ -108,3 +108,4 @@ config.local.js
 config.dev.js
 .local/
 .aider*
+clock.html
