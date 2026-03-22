@@ -2,12 +2,8 @@
 # Pull recommended models for Ollama with Metal acceleration (FP16 variants)
 # Optimized for MacStudio Pro M2 Ultra
 
-# Set colors for output
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# shellcheck source=lib.sh
+source "$(dirname "$0")/lib.sh"
 
 echo -e "${GREEN}Pulling LLM Models with Metal Acceleration (FP16 variants)${NC}"
 echo -e "${BLUE}Optimized for MacStudio Pro M2 Ultra${NC}"
@@ -21,9 +17,9 @@ if ! command -v ollama &> /dev/null; then
 fi
 
 # Check if Ollama is running
-if ! curl -s http://localhost:11434/api/tags &> /dev/null; then
+if ! ollama_running; then
     echo -e "${RED}Error: Ollama is not running.${NC}"
-    echo "Please start Ollama first with: ./scripts/start-stack.sh"
+    echo "Please start Ollama first with: gollm start"
     exit 1
 fi
 
@@ -37,11 +33,11 @@ models=(
     #"llama3.1:8b-instruct"
     #"mistral:7b-instruct"
     "gpt-oss:120b"
-    "gpt-oss:20b"
-    "qwen3:8b"
-    "qwen3-coder:30b"
-    "ministral-3:8b"
-    "devstral-2:latest"
+    #"gpt-oss:20b"
+    "qwen3.5:35b"
+    "qwen3.5:122b"
+    #"ministral-3:8b"
+    #"devstral-2:latest"
 )
 
 # Get list of already pulled models
@@ -54,7 +50,7 @@ pulled_count=0
 # Pull each model
 for model in "${models[@]}"; do
     # Check if model is already pulled
-    if echo "$existing_models" | grep -q "$model"; then
+    if echo "$existing_models" | grep -qx "$model"; then
         echo -e "${YELLOW}Model $model is already pulled. Skipping.${NC}"
         continue
     fi

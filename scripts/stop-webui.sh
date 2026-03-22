@@ -2,12 +2,8 @@
 # Stop Open WebUI in Docker with GPU support
 # Note that Ollama will continue running independently
 
-# Set colors for output
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# shellcheck source=lib.sh
+source "$(dirname "$0")/lib.sh"
 
 echo -e "${YELLOW}Stopping GPU-enabled Open WebUI in Docker${NC}"
 echo "===================================================="

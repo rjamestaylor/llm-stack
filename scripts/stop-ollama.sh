@@ -2,12 +2,8 @@
 # Stop Ollama without affecting WebUI
 # This allows for independent management of Ollama
 
-# Set colors for output
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# shellcheck source=lib.sh
+source "$(dirname "$0")/lib.sh"
 
 echo -e "${YELLOW}Stopping Ollama${NC}"
 echo "===================================================="
@@ -59,7 +55,7 @@ else
 fi
 
 # Check if API is still responsive (extra confirmation)
-if curl -s http://localhost:11434/api/tags &> /dev/null; then
+if ollama_running; then
     echo -e "${RED}Warning: Ollama API is still responsive on port 11434.${NC}"
     echo -e "Something may still be running on this port."
 else

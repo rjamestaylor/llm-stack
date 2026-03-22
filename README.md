@@ -1,94 +1,98 @@
-# LLM Stack with Ollama and Open WebUI
+# llm-stack
 
-A complete local LLM setup combining Ollama with Metal acceleration (for Apple Silicon) and Docker-based Open WebUI. This stack enables running powerful large language models locally with an intuitive web interface, optimized performance, and comprehensive benchmarking tools.
-
-## Overview
-
-This repository provides:
-
-1. **Local LLM Inference**: Run state-of-the-art language models on your local machine
-2. **Metal Acceleration**: Optimized for Apple Silicon GPUs with Metal acceleration
-3. **User-Friendly Interface**: Web-based UI for interacting with models
-4. **Performance Benchmarking**: Tools to measure and compare model performance
-5. **Model Management**: Scripts for downloading and organizing models
+Local LLM inference stack for Apple Silicon — Ollama + MLX as inference backends,
+Open WebUI as the chat interface, managed through the `gollm` CLI.
 
 ## Quick Start
 
-1. **Install Ollama**: `brew install ollama` (if not already installed)
-2. **Launch Stack**: `./scripts/start-stack.sh`
-3. **Pull Models**: `./scripts/pull-models-fp16.sh`
-4. **Access WebUI**: http://localhost:3000
+```bash
+# Start everything
+gollm start all
+gollm mlx start
 
-## Management Scripts
+# Check status
+gollm status
+```
 
-### Main Stack Management
-- `start-stack.sh` - Start both Ollama and Open WebUI
-- `stop-stack.sh` - Stop both Ollama and WebUI services
-- `restart-stack.sh` - Restart all services
-- `update-stack.sh` - Update Ollama and WebUI to latest versions
-- `status.sh` - Check system status
+Access Open WebUI at **http://localhost:3000**
 
-### Component Management
-All components can be managed independently:
+## The `gollm` CLI
 
-- `start-ollama.sh` - Start only Ollama with Metal acceleration
-- `stop-ollama.sh` - Stop only Ollama
-- `start-webui.sh` - Start only the Open WebUI container
-- `stop-webui.sh` - Stop only the Open WebUI container
+Install once to use from anywhere:
 
-### Model Management
-- `pull-models.sh` - Download recommended quantized models optimized for Metal acceleration
-- `pull-models-fp16.sh` - Download recommended FP16 models for optimal quality (larger but more accurate)
-- `list-models.sh` - List available models
+```bash
+ln -sf ~/projects/llm-stack/gollm /usr/local/bin/gollm
+```
 
-## Benchmarking with llm-bench
+| Command | What it does |
+|---|---|
+| `gollm status` | Full context snapshot: services, loaded model, all local models |
+| `gollm start` | Start Ollama |
+| `gollm start webui` | Start Open WebUI (Docker) |
+| `gollm start all` | Start both |
+| `gollm stop` | Stop Ollama |
+| `gollm stop all` | Stop both services |
+| `gollm restart` | Restart Ollama (+ WebUI if running) |
+| `gollm pull <model>` | Pull a model from Ollama registry |
+| `gollm import <file.gguf> [name]` | Import a local GGUF file into Ollama |
+| `gollm models` | List local models with what's in VRAM |
+| `gollm ps` | Show which model is currently loaded in memory |
+| `gollm rm <model>` | Remove a model |
+| `gollm mlx start\|stop\|restart\|status\|log` | Manage MLX server |
+| `gollm webui start\|stop` | Manage Open WebUI independently |
+| `gollm help` | Full command reference |
 
-For model benchmarking, we recommend using the dedicated [llm-bench](https://github.com/rjamestaylor/llm-bench) repository which has been extracted from this project. 
+## Architecture
 
-### llm-bench Features
-- **Comprehensive Performance Testing**: Measure token generation speed, memory usage, CPU utilization
-- **Model Comparison**: Compare different models on the same hardware
-- **Visualization Tools**: Generate charts and reports for easy analysis
-- **Hardware Optimization**: Identify the best models for your specific system
+- **Ollama** — native binary at `/usr/local/bin/ollama`, Metal acceleration on Apple Silicon, API at `http://localhost:11434`
+- **MLX (`mlx-lm`)** — Apple Silicon-native inference, faster than Ollama for large models, OpenAI-compatible API at `http://localhost:8080/v1`
+- **Open WebUI** — Docker container, connects to both Ollama and MLX backends at `http://localhost:3000`
 
-The llm-bench repository provides a complete set of tools for benchmarking LLM performance with Ollama, including detailed documentation, visualization tools, and analysis capabilities.
+## Configuration
 
-## System Requirements
+- **`models.conf`** — Ollama model registry: the single source of truth for which models you actively manage. Format: `name | description | tags`
+- **`mlx.conf`** — MLX server settings: model path, thinking mode, KV cache size, etc. Edit then run `gollm mlx restart` to apply.
 
-- **Supported Hardware**: 
-  - Apple Silicon Macs (with Metal acceleration)
-  - x86 systems (with reduced performance)
-- **Recommended RAM**: 16GB+ (32GB+ for larger models)
-- **Storage**: 20GB+ for Ollama + WebUI, additional space for models
-- **Software**:
-  - Native Ollama installation
-  - Docker Desktop
-  - Python 3.6+ (for visualization tools)
+## When to Use Ollama vs MLX
 
-## Metal Acceleration
+| | Ollama | MLX |
+|---|---|---|
+| **Best for** | Quick CLI interactions, smaller models, broad format support (GGUF) | Large models on M-series Mac, thinking mode, high throughput |
+| **Formats** | GGUF (quantized) | MLX-converted weights |
+| **Requires** | macOS or Linux | Apple Silicon only |
 
-This stack automatically utilizes Metal acceleration on Apple Silicon Macs for significantly improved performance:
+**MLX is the primary path for large models** — it uses Apple Silicon more efficiently and supports thinking mode with extended reasoning chains.
 
-- **Automatic Detection**: The stack detects Apple Silicon and enables Metal acceleration
-- **Environment Variables**: Key optimizations are pre-configured in scripts
-- **Performance Metrics**: Benchmarking tools measure Metal acceleration benefits
+## Model Recommendations
 
-## Recommended Models
+Current recommended models:
 
-For the best balance of performance and quality:
+| Model | Backend | Use case |
+|---|---|---|
+| `qwen3.5:122b` | Ollama or MLX 8-bit | Largest reasoning, best quality |
+| `qwen3.5:35b` | Ollama or MLX 8-bit | Strong reasoning, faster |
+| `qwen3.5:27b` (MLX 8-bit) | MLX | Balanced quality + speed |
+| `gpt-oss:120b` | Ollama | Large general-purpose |
 
-- **General Purpose**: Llama 3.1 (8B or 70B quantized versions)
-- **Coding**: Codestral 22B or Mixtral 8x7B
-- **Reasoning**: Qwen2.5 72B or similar
-- **Smaller Models**: Phi-3, Mistral 7B, or Llama3 8B
-
-Model recommendations may change as new models are released.
+For MLX: prefer 8-bit quantization for quality, 4-bit for speed. The Qwen3.5 family
+excels at reasoning tasks and extended thinking chains.
 
 ## Troubleshooting
 
-- Run `./scripts/status.sh` to check system status
-- Check Ollama logs: `cat ~/.ollama/ollama.log`
-- Check WebUI logs: `docker logs open-webui`
-- Restart the stack: `./scripts/restart-stack.sh`
+```bash
+gollm status               # service health at a glance
+cat ~/.ollama/ollama.log   # Ollama logs
+gollm mlx log              # MLX logs (warnings filtered)
+docker logs open-webui     # WebUI logs
+```
 
-For more specific issues, see the Ollama and Open WebUI documentation.
+## Benchmarking
+
+For model benchmarking, use the dedicated [llm-bench](https://github.com/rjamestaylor/llm-bench) repository. It provides throughput measurement, model comparison, and visualization tools.
+
+## System Requirements
+
+- **Hardware**: Apple Silicon Mac (M1 or later) — required for MLX, recommended for Ollama Metal acceleration
+- **RAM**: 32GB minimum; 64GB+ recommended for 27B+ models
+- **Storage**: 20GB+ for tooling; plan ~70GB per large model (8-bit, 120B class)
+- **Software**: Native Ollama, Docker Desktop, Python 3.10+ with `mlx-lm`

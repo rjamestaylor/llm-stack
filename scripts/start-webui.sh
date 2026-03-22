@@ -2,12 +2,8 @@
 # Start Open WebUI in Docker with GPU support for Apple Silicon
 # Using the recommended Ollama-integrated container
 
-# Set colors for output
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
+# shellcheck source=lib.sh
+source "$(dirname "$0")/lib.sh"
 
 echo -e "${GREEN}Starting Open WebUI in Docker with GPU support${NC}"
 echo "===================================================="
@@ -21,14 +17,14 @@ fi
 
 # Ensure Ollama is running first for native Apple Silicon support
 echo -e "${BLUE}Checking if Ollama is running...${NC}"
-if ! curl -s http://localhost:11434/api/tags &> /dev/null; then
+if ! ollama_running; then
     echo -e "${YELLOW}Ollama is not running. Starting Ollama first...${NC}"
     "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/start-ollama.sh"
-    
+
     # Wait for Ollama to initialize
     echo "Waiting for Ollama to initialize..."
     for i in {1..10}; do
-        if curl -s http://localhost:11434/api/tags &> /dev/null; then
+        if ollama_running; then
             echo -e "${GREEN}Ollama API is now responsive.${NC}"
             break
         fi

@@ -17,7 +17,9 @@ fi
 mkdir -p "$OLLAMA_DATA_DIR"
 
 # Environment variables for Metal optimization
-export OLLAMA_HOST=0.0.0.0:11434     # Make accessible from Docker
+# 128k context window recommended for large models (gpt-oss:120b, qwen3.5:122b)
+export OLLAMA_CONTEXT_LENGTH=$((128 * 1024))
+export OLLAMA_HOST=0.0.0.0:11434  # Make accessible from Docker
 export OLLAMA_MODELS="$OLLAMA_DATA_DIR/models"
 export METAL_DEVICE_WRAPPER_ENABLED=1  # Enable Metal acceleration
 export METAL_DEBUG_ERROR_MODE=1        # Show detailed Metal errors
@@ -26,8 +28,11 @@ export METAL_DEBUG_ERROR_MODE=1        # Show detailed Metal errors
 # Adjust these values based on your specific M2 Ultra configuration
 export OLLAMA_NUM_CPU=20
 
+# shellcheck source=lib.sh
+source "$(dirname "$0")/lib.sh"
+
 # Check if Ollama is already running
-if curl -s http://localhost:11434/api/tags &> /dev/null; then
+if ollama_running; then
     echo "Ollama is already running on port 11434."
     echo "If you want to restart with new settings, please stop it first."
     exit 0

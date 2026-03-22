@@ -1,53 +1,21 @@
 #!/bin/bash
+# DEPRECATED: This script predates the gollm CLI and uses outdated paths.
+# For Ollama updates: brew upgrade ollama
+# For WebUI updates: docker pull ghcr.io/open-webui/open-webui:main && gollm restart
+#
 # Update the LLM stack (native Ollama and GPU-enabled Docker WebUI)
 
-# Set colors for output
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m' # No Color
-
-# Get the absolute path to the script directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# shellcheck source=lib.sh
+source "$SCRIPT_DIR/lib.sh"
 
 MODEL="gpt-oss:120b"  # Default model
 
-show_usage() {
-  echo "Usage: $0 [OPTIONS] [MODEL]"
-  echo ""
-  echo "Options:"
-  echo "  --list-models, -l     List available models and exit"
-  echo "  --select-model, -s    Interactively select a model"
-  echo "  --help, -h            Show this help message"
-  echo ""
-  echo "If MODEL is provided, it will be loaded. Otherwise, gpt-oss:120b is used."
-  exit 0
-}
-
-# Process command line arguments
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --list-models|-l)
-      "$SCRIPT_DIR/list-models.sh" --list
-      exit 0
-      ;;
-    --select-model|-s)
-      MODEL=$("$SCRIPT_DIR/list-models.sh" --select)
-      shift
-      ;;
-    --help|-h)
-      show_usage
-      ;;
-    *)
-      # If it's not an option, assume it's the model name
-      if [[ "$1" != -* ]]; then
-        MODEL="$1"
-      fi
-      shift
-      ;;
-  esac
-done
+# Accept an optional model name as the first argument
+if [[ -n "$1" && "$1" != -* ]]; then
+  MODEL="$1"
+fi
 
 echo -e "${YELLOW}Updating LLM Stack with GPU Support${NC}"
 echo "===================================================="
